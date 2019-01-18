@@ -1,0 +1,52 @@
+###HED Bug Closure Template
+---Root Cause---
+19.04 sprint 2 development
+
+
+---Functional Description---
+- Not specified
+
+---Technical Resolution---
+Added the following new REST resources and related entries under permissionlist in HER jazn-data.xml file.
+
+    transcriptTypes
+    transcriptNotes
+    curriculumTypes
+Added  the following existing resources to new permission list ad new method permission.
+	studentCurriculums
+	studentCredentials
+ 
+
+---Describe manual dev testcases/steps added/modified/executed to verify this---
+Verified standards compliance by running pre-merge report.
+Verified successful patching by running upatch.
+Verified successful test suite execution by running full HER LRGs.
+
+
+---Transaction Details---
+Transaction Name: machack_bug-28864697
+Files Included in this transaction:  
+Please see premerge report attached to bug for full list of files.
+
+
+Is data model change required: No
+Code Reviewer:  
+Rahul Rajput
+Venkatesh Srinivasan
+
+Approvrer: 
+Raghav Nirwani
+
+---Project Dependencies---
+List of project dependencies
+N/A
+
+---LRG coverage for the bug fix---
+N/A
+
+---Automation Impact---
+BAT results - NA
+Does the fix impact existing automation - NA
+If yes, tracking bug for automation - NA
+List of BATs impacted - NA
+Are automation changes merged - NA

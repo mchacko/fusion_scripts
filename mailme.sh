@@ -4,8 +4,6 @@
 #
 #
 
-#read pipe_input
-
 cfgFile=~/.Premerge.cfg
 curUser=`whoami`
 
@@ -106,14 +104,13 @@ if [  "$length" -gt 0 ]  ;then
 	done
 else
 	echo "No arguments specified. Sending simple notification"
-	
 	subject="Notification from $hostname:$curUser at $starttime"
 	mail_text="Notification sent from $hostname:$curUser at $starttime"
 	mail_text="$mail_text"$'\n'
-	#mail_text="$mail_text Last 4 commands that were executed:"
+	mail_text="$mail_text Last 4 commands that were executed:"
 	mail_text="$mail_text"$'\n'
-	#commands=`history 4`
-	#mail_text="$mail_text $pipe_input"
+	commands=`history 4`
+	mail_text="$mail_text $commands"
 	`echo "$mail_text" | mutt -s "$subject" $email` 
 fi
 

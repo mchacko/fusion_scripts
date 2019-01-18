@@ -1,0 +1,5 @@
+skip hed/components/campusCommunity/CampusCommunity.jws CampusCommunity
+skip hed/components/recordsManagement/RecordsManagement.jws RecordsManagement
+skip hed/components/financialsManagement/FinancialsManagement.jws FinancialsManagement
+skip hed/components/hedEss/HedEss.jws HedEss
+skip hed/components/campusCommunitySoa/CampusCommunitySoa.jws CampusCommunitySoa

@@ -1,0 +1,47 @@
+###HED Bug Closure Template
+---Root Cause---
+Issue raised by translations team
+
+
+---Functional Description---
+ Not specified
+
+---Technical Resolution---
+updated the seeded meaning and description values of lookup type ORA_HER_ATTACHMENT_TYPE as sugested by translations contact.
+
+
+
+---Describe manual dev testcases/steps added/modified/executed to verify this---
+Verified standards compliance by running pre-merge report.
+Verified FPR patching my test applying to DB instance.
+
+
+---Transaction Details---
+Transaction Name: machack_bug-25044059 
+Files Included in this transaction: 
+
+  1.  fusionapps/hed/her/db/data/HedHerCrManagement/HerLookupTypeSD.xml
+  2.  fusionapps/hed/her/db/data/HedHerCrManagement/US/HerLookupTypeSD.xlf
+
+Is data model change required: No
+Code Reviewer:  
+Venkatesh Srinivasan
+Vijayalakshmi Deivasigamani
+
+Approvrer: 
+rajeev.bhatia@oracle.com
+
+
+---Project Dependencies---
+List of project dependencies
+N/A
+
+---LRG coverage for the bug fix---
+N/A
+
+---Automation Impact---
+BAT results - NA
+Does the fix impact existing automation - NA
+If yes, tracking bug for automation - NA
+List of BATs impacted - NA
+Are automation changes merged - NA
