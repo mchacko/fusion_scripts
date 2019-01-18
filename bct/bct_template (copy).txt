@@ -1,0 +1,51 @@
+###HED Bug Closure Template
+---Root Cause---
+Enhancements in R13.6
+
+---Functional Description---
+ Not specified
+
+---Technical Resolution---
+Fixed bugs related to curriculum registry course UI. 
+Added new search and sort feature in course template page.
+
+
+---Describe manual dev testcases/steps added/modified/executed to verify this---
+Verified there were no regression issues by running Junits..
+Verified standards compliance by running pre-merge report.
+Verified build was clean by grabbing the transaction to a separate view and executing ant build.
+
+
+---Transaction Details---
+Transaction Name: machack_bug-23176420 
+Files Included in this transaction: 
+Please check premerge report attached to bug which has complete list of files
+
+
+Is data model change required: No
+Code Reviewer:  
+Vijayalakshmi Deivasigamani
+ Rahul Gupta
+ Venkatesh Srinivasan
+ Viswanadharao Budidi
+ Ramanjit Kaur
+ Suma Chandrasekhar Nirmala
+
+
+Approvrer: 
+rajesh.bezawada@oracle.com, rajeev.bhatia@oracle.com
+
+
+---Project Dependencies---
+List of project dependencies
+N/A
+
+---LRG coverage for the bug fix---
+N/A
+
+---Automation Impact---
+BAT results - NA
+Does the fix impact existing automation - NA
+If yes, tracking bug for automation - NA
+List of BATs impacted - NA
+Are automation changes merged - NA

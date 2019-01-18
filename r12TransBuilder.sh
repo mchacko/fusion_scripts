@@ -31,169 +31,20 @@ user=`whoami`
 viewname=`date +"build%Y%m%d%H%M%S"`
 update_bug="Y"
 #series_name="FUSIONAPPS_11.1.1.5.1_LINUX.X64"
-#series_name="FUSIONAPPS_PT.V2MIBHED_LINUX.X64"
-#series_name="FUSIONAPPS_PT.V2MIB_LINUX.X64" 
-#series_name="FUSIONAPPS_PT.V2MIBHEDJET_LINUX.X64"
-series_name=""
+series_name="FUSIONAPPS_PT.INTHED_LINUX.X64" 
 #junit_db_mc="slcak358.us.oracle.com" 
 #junit_port="1563" 
 #junit_sid="ems7642"
 junit_db_mc="slcak358.us.oracle.com" 
-junit_port="1581" 
-junit_sid="ems2658"
+junit_port="1586" 
+junit_sid="ems18163"
 junit_full_suite="N"
 run_test="Y"
 start_time=`date`
 destroy_view="Y"
 run_build="Y"
 curUser=`whoami`
-central_log_dir="/net/den01ghp.us.oracle.com/scratch/share/build_logs"
-emma="false"
-trans_name=$1
-
-#################################################################################
-
-sendEmail()
-{
-echo "Sending report to $user." | tee -a $log_dir/${trans_name}.log
-cfgFile=~/.Premerge.cfg
-
-
-email=`grep -i "^EMail:$curUser:" $cfgFile 2>/dev/null |cut -d: -f3|grep -i "@oracle.com$"`
-if [[ -n $email ]];then
-	echo "Reading email id from $cfgFile"  | tee -a $log_dir/${trans_name}.log
-	echo "Email ID: $email" | tee -a $log_dir/${trans_name}.log
-	echo "Sending email.." | tee -a $log_dir/${trans_name}.log
-
-	subject="Build report for $trans_name -- $success"
-	build_details=`tail --lines=13 $log_dir/build-report.log`
-	# attachments="-a /home/${curUser}/build_logs/${trans_name}/build-report.log   -a /home/${curUser}/build_logs/${trans_name}/build-report.html"
-	attachments=""
-	if [ -f $log_dir/${trans_name}_build-report.html ]; then
-		attachments=" -a ${log_dir}/${trans_name}_build-report.html"
-	fi
-	mail_text="Build details:"			
-	mail_text="$mail_text"$'\n'************
-	mail_text="$mail_text"$'\n' 
-	mail_text="$mail_text Log access: http://den01ghp.us.oracle.com/build_logs_central/${viewname} "$'\n' 
-	mail_text="$mail_text"$'\n' 
-	mail_text="$mail_text $build_details"
-	
-	if [ -f $log_dir/${trans_name}_HER_test-report.html ]; then
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text -------------------------------------------------------------------------"
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text HER Test Details"
-		mail_text="$mail_text"$'\n'***************** 
-		mail_text="$mail_text $testresult_HER"
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text HER Test Details"
-		mail_text="$mail_text"$'\n'
-		compile_errors=""
-		compile_errors=`cat /home/${curUser}/build_logs/${viewname}/${trans_name}_HER_test-report.log | grep -B 1 "\[custom:test\] Error("`
-		if [ "$compile_errors" != "" ]; then		
-			mail_text="$mail_text"$'\n'
-			mail_text="$mail_text !!!! Compile Errors !!!"
-			mail_text="$mail_text $compile_errors"
-			mail_text="$mail_text"$'\n'
-		fi
-		attachments="$attachments -a /home/${curUser}/build_logs/${viewname}/${trans_name}_HER_test-report.html"
-	fi
-	if [ -f $log_dir/${trans_name}_HES_test-report.html ]; then
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text -------------------------------------------------------------------------"
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text HES Test Details"
-		mail_text="$mail_text"$'\n'***************** 
-		mail_text="$mail_text $testresult_HES"
-		mail_text="$mail_text"$'\n'
-		compile_errors=""
-		compile_errors=`cat /home/${curUser}/build_logs/${viewname}/${trans_name}_HES_test-report.log | grep -B 1 "\[custom:test\] Error("`
-		if [ "$compile_errors" != "" ]; then
-			mail_text="$mail_text"$'\n'
-			mail_text="$mail_text !!!! Compile Errors !!!"
-			mail_text="$mail_text $compile_errors"
-			mail_text="$mail_text"$'\n'
-		fi
-		attachments="$attachments -a /home/${curUser}/build_logs/${viewname}/${trans_name}_HES_test-report.html"
-	fi
-	if [ -f $log_dir/${trans_name}_HEY_test-report.html ]; then
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text -------------------------------------------------------------------------"
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text"$'\n'
-		mail_text="$mail_text HEY Test Details"
-		mail_text="$mail_text"$'\n'***************** 
-		mail_text="$mail_text $testresult_HEY"
-		mail_text="$mail_text"$'\n'
-		compile_errors=""
-		compile_errors=`cat /home/${curUser}/build_logs/${viewname}/${trans_name}_HEY_test-report.log | grep -B 1 "\[custom:test\] Error("`
-		if [ "$compile_errors" != "" ]; then
-			mail_text="$mail_text"$'\n'
-			mail_text="$mail_text !!!! Compile Errors !!!"
-			mail_text="$mail_text $compile_errors"
-			mail_text="$mail_text"$'\n'
-		fi
-		attachments="$attachments -a /home/${curUser}/build_logs/${viewname}/${trans_name}_HEY_test-report.html"
-	fi
-	
- 			
-	echo "$mail_text" | mutt  $email $attachments -s "$subject" $cc_mail 
-else
-	echo "Could not find user's email. Email notification cannot be sent" | tee -a $log_dir/${trans_name}.log
-fi
-
-}
-
-
-destroyView()
-{
-if [ "$destroy_view" = "Y" ]; then
-	echo -n "Destroying build view $viewname..." | tee -a $log_dir/${trans_name}.log
-	`ade destroyview $viewname  -no_ask > $log_dir/destroyview.log `
-	echo "Done." | tee -a $log_dir/${trans_name}.log
-else
-	echo "$viewname not destroyed" | tee -a $log_dir/${trans_name}.log
-fi
-}
-
-displayEndSummary()
-{
-end_time=`date`
-echo "Ended processing at $end_time" | tee $log_dir/${trans_name}.log
-
-script_end_time=$(date +%s)
-script_elapsed_time=$(($script_end_time - $script_start_time))
-secs=$((  script_elapsed_time % 60    ))  
-mins=$((  ( script_elapsed_time / 60 ) % 60    ))  
-hrs=$((  script_elapsed_time / 3600    ))
-elapsed_time_formatted=`printf "%02d:%02d:%02d\n" $hrs $mins $secs`
-
-echo "" | tee -a $log_dir/${trans_name}.log
-echo "Execution duration $elapsed_time_formatted" | tee -a $log_dir/${trans_name}.log
-}
-
-
-copyLogsToCentral() 
-{
-cp -r "$log_dir" "$central_log_dir" 
-echo "Logs are available at $central_log_dir and http://den01ghp.us.oracle.com/build_logs_central/${viewname}"
-}
-
-handleInterrupt()
-{
-echo "User intrrupted the script. Exiting cleanly..." | tee -a $log_dir/${1}.log
-copyLogsToCentral
-sendEmail
-destroyView
-displayEndSummary
-exit
-}
+central_log_dir="/net/slc00slj/scratch/share/build_logs"
 
 getElapsedTime () 
 {
@@ -204,19 +55,11 @@ hrs=$((  task_elapsed_time / 3600    ))
 elapsed_time_formatted=`printf "%02d:%02d:%02d\n" $hrs $mins $secs`
 }
 
-#######################################################################################################################'
-
-
-trap handleInterrupt 1 2 15
-
-
 echo ""
 echo "***************************************************************************"
 echo "**************** Transaction Builder & Tester *****************************"
 echo ""
 echo ""
-
-
 
 if [ "$1" = "" ]; then
 	echo "No transaction name provided. Unable to continue"
@@ -233,50 +76,10 @@ fi
 # create a log directory for the build view
 log_dir="/home/${curUser}/build_logs/${viewname}"
 mkdir -p "$log_dir"
+
 echo "Logs will be stored in location: $log_dir"
 
-# save describe trasn to a file for reading later
-`ade describetrans $1 &> $log_dir/describetrans.log`
-
-invalid_trans=""
-invalid_trans=`cat  $log_dir/describetrans.log | grep "not found in ADE"`
-if [ "$invalid_trans" != "" ]; then
-	echo "$invalid_trans" | tee -a $log_dir/${1}.log
-	exit
-fi
-
-if [ "$series_name" = "" ]; then
-	series_name=`cat  $log_dir/describetrans.log | grep "BASE_LABEL" | cut -d":" -f2 | cut -d"_" -f1,2,3 | tr -d ' '`
-fi
-
-if [ "$series_name" = "" ]; then
-	echo "Could not find series name. Exiting.." | tee -a $log_dir/${1}.log
-	exit
-else
-	echo "Found series name from transaction: $series_name" | tee -a $log_dir/${1}.log
-fi
-
-# set LRG db values based on series name - we know series for R13 and R13.6 currently
-if [ "$series_name" = "FUSIONAPPS_PT.V2MIBHEDDEV_LINUX.X64" ]; then
-	junit_db_mc="slcak358.us.oracle.com" 
-	junit_port="1581" 
-	junit_sid="ems2658"
-elif [ "$series_name" = "FUSIONAPPS_PT.V2MIBHED_LINUX.X64" ]; then
-	junit_db_mc="slcak359.us.oracle.com" 
-	junit_port="1583" 
-	junit_sid="ems18261"
-elif [ "$series_name" = "FUSIONAPPS_PT.V2MIBFPHGOLD_LINUX.X64" ]; then
-	junit_db_mc="slcak359.us.oracle.com" 
-	junit_port="1583" 
-	junit_sid="ems18261"
-elif [ "$series_name" = "FUSIONAPPS_PT.V2MIBHEDSILVER_LINUX.X64" ]; then
-	junit_db_mc="slcak358.us.oracle.com" 
-	junit_port="1581" 
-	junit_sid="ems2658"
-fi
-
-
-#echo "Transaction name: $1. Started processing at $script_start_time" | tee -a $log_dir/${1}.log
+`echo "Transaction name: $1. Started processing at $start_time" > $log_dir/${1}.log`
 
 bugNo=`ade describetrans $1 -properties_only|grep "^ *BUG_NUM"|awk '{print $3}'`
 if [ "$bugNo" = "" ]; then
@@ -306,7 +109,7 @@ if [  "$length" -gt 1 ]  ;then
 			quick_build="Y"
 			echo "Based on argument provided to script, quick build will be run if applicable" | tee -a $log_dir/${1}.log
 		elif [ "${var: -11}" =  "@oracle.com" ] ; then  #this is most likely an email address
-			cc_mail="$cc_mail -c $var"
+			cc_mail="$cc_mail $var"
 			echo "Based on argument provided to script, notification email will cc $var" | tee -a $log_dir/${1}.log
 		elif [ "$var" =  "retain_view" ] ; then  
 			destroy_view="N"
@@ -316,42 +119,21 @@ if [  "$length" -gt 1 ]  ;then
 			echo "Based on argument provided to script, build will not be executed" | tee -a $log_dir/${1}.log	
 		elif [ "${var:0:11}" =  "FUSIONAPPS_" ] ; then   #this is very likely to be series name, use this series for view
 			series_name="$var"
-			echo "Based on argument provided to script, series used will be $var" | tee -a $log_dir/${1}.log
-		elif [ "$var" =  "emma" ] ; then   #enabel emma report
-			emma="true"
-			echo "Based on argument provided to script, emma coverage will be enabled" | tee -a $log_dir/${1}.log
-		elif [ "$var" =  "ems7642" ] ; then   
-			junit_db_mc="slcak358.us.oracle.com" 
-			junit_port="1563" 
-			junit_sid="ems7642"
-			echo "Based on argument provided to script, junit DB set to $var " | tee -a $log_dir/${1}.log
-		elif [ "$var" =  "r13.6db" ] ; then  
-			junit_db_mc="slcak358.us.oracle.com" 
-			junit_port="1581" 
-			junit_sid="ems2658"
-			echo "Based on argument provided to script, junit DB set to $var - ems2658 " | tee -a $log_dir/${1}.log
-		elif [ "$var" =  "r13db" ] ; then  
-			junit_db_mc="slcak358.us.oracle.com" 
-			junit_port="1564" 
-			junit_sid="ems1543"
-			echo "Based on argument provided to script, junit DB set to $var - ems1543" | tee -a $log_dir/${1}.log
+			echo "Based on argument provided to script, series used will be $var" | tee -a $log_dir/${1}.log		
 		fi
 	done
 fi
 
-echo ""
-echo "Build will be run on ade series $series_name"
-echo "Junit DB is ${junit_db_mc}:${junit_port}/${junit_sid} "
-echo ""
 
-#if [ "$cc_mail" != "" ]; then
-#	cc_mail=" -c $cc_mail"
-#fi
+echo "Build will be run on ade series $series_name"
+
+if [ "$cc_mail" != "" ]; then
+	cc_mail=" -c $cc_mail"
+fi
 
 task_start_time=$(date +%s)
 echo -n "Creating build view $viewname..." | tee -a $log_dir/${1}.log
 `ade createview $viewname -series $series_name -latest > $log_dir/createview.log`
-#`ade createview $viewname -label FUSIONAPPS_PT.INTHED_LINUX.X64_160513.1200.S > $log_dir/createview.log`
 out_file=""
 out_file=`cat $log_dir/createview.log | grep "ade ERROR:"`
 if [ "$out_file" != "" ]; then
@@ -363,9 +145,8 @@ task_end_time=$(date +%s)
 getElapsedTime
 echo "Done. Task completed in $elapsed_time_formatted"  | tee -a $log_dir/${1}.log
 
-
-
-#`cp -fv /home/machack/workaround/build-*.xml ~/view_storage/${user}_${viewname}/fusionapps/hed/`
+# save describe trasn to a file for reading later
+`ade describetrans $1 &> $log_dir/describetrans.log`
 
 if [ "$quick_build" = "Y" ]; then
 	run_HEY_build="N"
@@ -429,8 +210,6 @@ if [ "$quick_build" = "Y" ]; then
 	fi
 fi
 
-#`ade useview $viewname -silent -exec "ade expand -recurse * $1 &> $log_dir/ade_expand.log" &> $log_dir/useview.log`
-
 task_start_time=$(date +%s)
 echo -n "Grabbing transaction $1..." | tee -a $log_dir/${1}.log
 `ade useview $viewname -silent -exec "ade grabtrans $1 &> $log_dir/grabtrans.log" &> $log_dir/useview.log`
@@ -443,10 +222,9 @@ if [ "$run_build" = "Y" ]; then
 	task_start_time=$(date +%s)
 	if [ "$quick_build" = "Y" ]; then
 		echo -n "Running quick build for transaction $1..." | tee -a $log_dir/${1}.log
-		`ade useview $viewname -silent -exec "ant build build-report -f ${run_build_file} &> $log_dir/build-report.log" &> $log_dir/useview.log`
+		`ade useview $viewname -silent -exec "ant build build-report -f hed/${run_build_file} &> $log_dir/build-report.log" &> $log_dir/useview.log`
 	else
 		echo -n "Running build for transaction $1..." | tee -a $log_dir/${1}.log
-		# `ade useview $viewname -silent -exec "ade resetdeplabel FABUILDTOOLS_PT.V2MIBFRETEST6_LINUX_171004.1833 ; ant clean build build-report -f hed/build.xml &> $log_dir/build-report.log" &> $log_dir/useview.log`
 		`ade useview $viewname -silent -exec "ant clean build build-report -f hed/build.xml &> $log_dir/build-report.log" &> $log_dir/useview.log`
 	fi
 	task_end_time=$(date +%s)
@@ -460,7 +238,6 @@ if [ "$run_build" = "Y" ]; then
 		#build failed. Run build report to get the actual html data
 		echo "Build failed. Trying to generate report"  | tee -a $log_dir/${1}.log
 		`cp $log_dir/build-report.log $log_dir/build-report_backup.log`
-		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/*.err  $log_dir/`
 		`ade useview $viewname -silent -exec "ant build-report -f hed/build.xml &> $log_dir/build-report.log"`
 	fi
 
@@ -487,8 +264,7 @@ if [ "$run_build" = "Y" ]; then
 	fi
 
 	if [ "$success" != "SUCCESS" ]; then
-		#run_test="N" TODO change after build issues are resolved
-		jj="gg"
+		run_test="N"
 	fi
 fi
 
@@ -553,14 +329,14 @@ if [ "$run_test" = "Y" ]; then
 		if [ "$junit_full_suite" = "N" ]; then			
 			echo "Test projects to run for HEY are $test_projects_HEY" | tee -a $log_dir/${1}.log
 			echo -n "Running HEY Junits..." | tee -a $log_dir/${1}.log
-			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Demma.enabled=$emma -Dtest.project=$test_projects_HEY -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-campusCommunity.xml test test-report &> $log_dir/HEY_test-report.log"`
+			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Dtest.project=$test_projects_HEY -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-campusCommunity.xml test test-report &> $log_dir/HEY_test-report.log"`
 			task_end_time=$(date +%s)
 			getElapsedTime	
 			echo "Done. Task completed in $elapsed_time_formatted" | tee -a $log_dir/${1}.log
 		else
 			echo "All test projects in HEY wil be run" | tee -a $log_dir/${1}.log
 			echo -n "Running HEY Junits..." | tee -a $log_dir/${1}.log
-			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Demma.enabled=$emma -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-campusCommunity.xml test test-report &> $log_dir/HEY_test-report.log"`
+			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-campusCommunity.xml test test-report &> $log_dir/HEY_test-report.log"`
 			task_end_time=$(date +%s)
 			getElapsedTime			
 			echo "Done. Task completed in $elapsed_time_formatted" | tee -a $log_dir/${1}.log
@@ -573,20 +349,9 @@ if [ "$run_test" = "Y" ]; then
 		echo "$testresult_HEY" | tee -a $log_dir/${1}.log
 		echo "" | tee -a $log_dir/${1}.log
 		echo "" | tee -a $log_dir/${1}.log
-		compile_errors=""
-		compile_errors=`cat $log_dir/HEY_test-report.log | grep -B 1 "\[custom:test\] Error("`
-		if [ "$compile_errors" != "" ]; then
-			echo " !!! compile errors !!!" | tee -a $log_dir/${1}.log
-			echo "$compile_errors" | tee -a $log_dir/${1}.log
-			echo "" | tee -a $log_dir/${1}.log
-			echo "" | tee -a $log_dir/${1}.log
-		fi
 
 		`cp $log_dir/HEY_test-report.log $log_dir/${1}_HEY_test-report.log`
 		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/test-report.html  $log_dir/${1}_HEY_test-report.html` 
-		`cp -r ~/view_storage/${user}_${viewname}/fusionapps/hed/coverage/  $log_dir/`
-		`cp -r ~/view_storage/${user}_${viewname}/fusionapps/hed/_files/  $log_dir/`
-		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/coverage*  $log_dir/`
 		
 		# upload reports to bugDB
 		if [ "$update_bug" = "Y" ]; then
@@ -603,14 +368,14 @@ if [ "$run_test" = "Y" ]; then
 		if [ "$junit_full_suite" = "N" ]; then
 			echo "Test projects to run for HES are $test_projects_HES" | tee -a $log_dir/${1}.log
 			echo -n "Running HES Junits..." | tee -a $log_dir/${1}.log
-			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Demma.enabled=$emma -Dtest.project=$test_projects_HES -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-financialsManagement.xml test test-report &> $log_dir/HES_test-report.log"`
+			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Dtest.project=$test_projects_HES -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-financialsManagement.xml test test-report &> $log_dir/HES_test-report.log"`
 			task_end_time=$(date +%s)
 			getElapsedTime	
 			echo "Done. Task completed in $elapsed_time_formatted" | tee -a $log_dir/${1}.log
 		else
 			echo "All test projects in HES wil be run" | tee -a $log_dir/${1}.log
 			echo -n "Running HES Junits..." | tee -a $log_dir/${1}.log
-			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Demma.enabled=$emma -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-financialsManagement.xml test test-report &> $log_dir/HES_test-report.log"`
+			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-financialsManagement.xml test test-report &> $log_dir/HES_test-report.log"`
 			task_end_time=$(date +%s)
 			getElapsedTime	
 			echo "Done. Task completed in $elapsed_time_formatted" | tee -a $log_dir/${1}.log
@@ -623,20 +388,9 @@ if [ "$run_test" = "Y" ]; then
 		echo "$testresult_HES" | tee -a $log_dir/${1}.log
 		echo "" | tee -a $log_dir/${1}.log
 		echo "" | tee -a $log_dir/${1}.log
-		compile_errors=""
-		compile_errors=`cat $log_dir/HES_test-report.log | grep -B 1 "\[custom:test\] Error("`
-		if [ "$compile_errors" != "" ]; then
-			echo " !!! compile errors !!!" | tee -a $log_dir/${1}.log
-			echo "$compile_errors" | tee -a $log_dir/${1}.log
-			echo "" | tee -a $log_dir/${1}.log
-			echo "" | tee -a $log_dir/${1}.log
-		fi
 
 		`cp $log_dir/HES_test-report.log $log_dir/${1}_HES_test-report.log`
 		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/test-report.html  $log_dir/${1}_HES_test-report.html` 
-		`cp -r ~/view_storage/${user}_${viewname}/fusionapps/hed/coverage/  $log_dir/`
-		`cp -r ~/view_storage/${user}_${viewname}/fusionapps/hed/_files/  $log_dir/`
-		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/coverage*  $log_dir/`
 		
 		# upload reports to bugDB
 		if [ "$update_bug" = "Y" ]; then
@@ -654,14 +408,14 @@ if [ "$run_test" = "Y" ]; then
 		if [ "$junit_full_suite" = "N" ]; then
 			echo "Test projects to run for HER are $test_projects_HER" | tee -a $log_dir/${1}.log
 			echo -n "Running HER Junits..." | tee -a $log_dir/${1}.log
-			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Demma.enabled=$emma -Dtest.project=$test_projects_HER -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-recordsManagement.xml test test-report &> $log_dir/HER_test-report.log"`
+			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Dtest.project=$test_projects_HER -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-recordsManagement.xml test test-report &> $log_dir/HER_test-report.log"`
 			task_end_time=$(date +%s)
 			getElapsedTime	
 			echo "Done. Task completed in $elapsed_time_formatted" | tee -a $log_dir/${1}.log
 		else
 			echo "All test projects in HER wil be run" | tee -a $log_dir/${1}.log
 			echo -n "Running HER Junits..." | tee -a $log_dir/${1}.log
-			`ade useview $viewname -silent -exec "ant -Dtest.lrg=true -Demma.enabled=$emma -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-recordsManagement.xml test test-report &> $log_dir/HER_test-report.log"`
+			`ade useview $viewname -silent -exec "ade pwv" -exec "ant -Dtest.lrg=true -Ddb.host=$junit_db_mc -Ddb.port=$junit_port -Ddb.sid=$junit_sid -f hed/build-recordsManagement.xml test test-report &> $log_dir/HER_test-report.log"`
 			task_end_time=$(date +%s)
 			getElapsedTime	
 			echo "Done. Task completed in $elapsed_time_formatted" | tee -a $log_dir/${1}.log
@@ -674,20 +428,9 @@ if [ "$run_test" = "Y" ]; then
 		echo "$testresult_HER" | tee -a $log_dir/${1}.log
 		echo "" | tee -a $log_dir/${1}.log
 		echo "" | tee -a $log_dir/${1}.log
-		compile_errors=""
-		compile_errors=`cat $log_dir/HER_test-report.log | grep -B 1 "\[custom:test\] Error("`
-		if [ "$compile_errors" != "" ]; then
-			echo " !!! compile errors !!!" | tee -a $log_dir/${1}.log
-			echo "$compile_errors" | tee -a $log_dir/${1}.log
-			echo "" | tee -a $log_dir/${1}.log
-			echo "" | tee -a $log_dir/${1}.log
-		fi
 		
 		`cp $log_dir/HER_test-report.log $log_dir/${1}_HER_test-report.log`
 		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/test-report.html  $log_dir/${1}_HER_test-report.html` 
-		`cp -r ~/view_storage/${user}_${viewname}/fusionapps/hed/coverage/  $log_dir/`
-		`cp -r ~/view_storage/${user}_${viewname}/fusionapps/hed/_files/  $log_dir/`
-		`cp ~/view_storage/${user}_${viewname}/fusionapps/hed/coverage*  $log_dir/`
 
 		# upload reports to bugDB
 		if [ "$update_bug" = "Y" ]; then
@@ -706,10 +449,74 @@ getElapsedTime
 echo "JUnits tests task completed in $elapsed_time_formatted"
 
 # copy logs to central shared folder
-copyLogsToCentral
+cp -r "$log_dir" "$central_log_dir" 
+echo "Logs are available at $central_log_dir and http://slc00slj.us.oracle.com/build_logs_central/${viewname}"
 
 
-sendEmail
+echo "Sending report to $user." | tee -a $log_dir/${1}.log
+cfgFile=~/.Premerge.cfg
+
+
+email=`grep -i "^EMail:$curUser:" $cfgFile 2>/dev/null |cut -d: -f3|grep -i "@oracle.com$"`
+if [[ -n $email ]];then
+	echo "Reading email id from $cfgFile"  | tee -a $log_dir/${1}.log
+	echo "Email ID: $email" | tee -a $log_dir/${1}.log
+	echo "Sending email.." | tee -a $log_dir/${1}.log
+
+	subject="Build report for $1 -- $success"
+	build_details=`tail --lines=13 $log_dir/build-report.log`
+	# attachments="-a /home/${curUser}/build_logs/${1}/build-report.log   -a /home/${curUser}/build_logs/${1}/build-report.html"
+	attachments=""
+	if [ -f /home/${curUser}/build_logs/${1}_build-report.html ]; then
+		attachments=" -a /home/${curUser}/build_logs/${viewname}/${1}_build-report.html"
+	fi
+	mail_text="Build details:"			
+	mail_text="$mail_text"$'\n'************
+	mail_text="$mail_text"$'\n' 
+	mail_text="$mail_text Log access: http://slc00slj.us.oracle.com/build_logs_central/${viewname} "$'\n' 
+	mail_text="$mail_text"$'\n' 
+	mail_text="$mail_text $build_details"
+	
+	if [ -f $log_dir/${1}_HER_test-report.html ]; then
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text -------------------------------------------------------------------------"
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text HER Test Details"
+		mail_text="$mail_text"$'\n'***************** 
+		mail_text="$mail_text $testresult_HER"
+		attachments="$attachments -a /home/${curUser}/build_logs/${viewname}/${1}_HER_test-report.html"
+	fi
+	if [ -f $log_dir/${1}_HES_test-report.html ]; then
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text -------------------------------------------------------------------------"
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text HES Test Details"
+		mail_text="$mail_text"$'\n'***************** 
+		mail_text="$mail_text $testresult_HES"
+		attachments="$attachments -a /home/${curUser}/build_logs/${viewname}/${1}_HES_test-report.html"
+	fi
+	if [ -f $log_dir/${1}_HEY_test-report.html ]; then
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text -------------------------------------------------------------------------"
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text"$'\n'
+		mail_text="$mail_text HEY Test Details"
+		mail_text="$mail_text"$'\n'***************** 
+		mail_text="$mail_text $testresult_HEY"
+		attachments="$attachments -a /home/${curUser}/build_logs/${viewname}/${1}_HEY_test-report.html"
+	fi
+	
+ 			
+	`echo "$mail_text" | mutt $attachments -s "$subject" $cc_mail $email` 
+else
+	echo "Could not find user's email. Email notification cannot be sent" | tee -a $log_dir/${1}.log
+fi
+
 
 if [ "$success" != "SUCCESS" ]; then #save the build logs and reports for later examination
 	#zip -q $log_dir/buildlogs ~/view_storage/${user}_${viewname}/fusionapps/hed/*
@@ -717,7 +524,25 @@ if [ "$success" != "SUCCESS" ]; then #save the build logs and reports for later 
 	destroy_view="N"	
 fi
 
-destroyView
+if [ "$destroy_view" = "Y" ]; then
+	echo -n "Destroying build view $viewname..." | tee -a $log_dir/${1}.log
+	`ade destroyview $viewname  -no_ask > $log_dir/destroyview.log `
+	echo "Done." | tee -a $log_dir/${1}.log
+else
+	echo "$viewname not destroyed" | tee -a $log_dir/${1}.log
+fi
 
-displayEndSummary
 
+end_time=`date`
+`echo "Ended processing at $end_time" >> $log_dir/${1}.log`
+
+script_end_time=$(date +%s)
+script_elapsed_time=$(($script_end_time - $script_start_time))
+secs=$((  script_elapsed_time % 60    ))  
+mins=$((  ( script_elapsed_time / 60 ) % 60    ))  
+hrs=$((  script_elapsed_time / 3600    ))
+elapsed_time_formatted=`printf "%02d:%02d:%02d\n" $hrs $mins $secs`
+
+echo "" | tee -a $log_dir/${1}.log
+echo "Execution duration $elapsed_time_formatted" | tee -a $log_dir/${1}.log
+ 
