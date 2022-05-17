@@ -5,14 +5,14 @@
 # Created on: 16-Nov-2015
 # Last updated: 21-Nov-2015
 # Version 0.2
-# 
+#
 # bup.sh {bugnumber} {file1} {files2}...
 # all arguments are optional and could be in any order
 #
-# This script will upload files to bugsftp based on command line arguments. 
+# This script will upload files to bugsftp based on command line arguments.
 # If no arguments are specified, it uses the current ade view's transaction name to figure out the bug number
 # if no files are specified, it check for the following files in current directory to upload:
-# build-report.html, build-report.html, test-report.html, test-report.log 
+# build-report.html, build-report.html, test-report.html, test-report.log
 
 ############ Change log #############################################
 #
@@ -28,13 +28,13 @@ getBugNumber ()
 	echo "Not is a view. Please run this command inside a view or specify a bug number"
 	exit
  fi
-	
+
 # echo "Trying to figure out the bug number from transaction name..."
-# bugNbr="$(ade pwv | grep 'VIEW_TXN_NAME' | tail -c 9)" 
+# bugNbr="$(ade pwv | grep 'VIEW_TXN_NAME' | tail -c 9)"
  bugNbr=`ade describetrans -properties_only|grep "^ *BUG_NUM"|awk '{print $3}'`
- echo -e "Found bug number: \e[1m$bugNbr\e[0m" 
-	
- reNbr='^[0-9]+$' 
+ echo -e "Found bug number: \e[1m$bugNbr\e[0m"
+
+ reNbr='^[0-9]+$'
  if ! [[ $bugNbr =~ $reNbr ]] ; then
 	echo "The determined bug number is invalid. Exiting"
 	exit
@@ -47,25 +47,25 @@ fileList=""
 length="$#"
 bugNbrSpecified="N"
 re='^[0-9]+$'
-bugNbr="" 
+bugNbr=""
 
 if [  "$length" -gt 0 ]  ;then
 	#echo "Reading arguments.."
-	index=1						
+	index=1
 	for var in "$@"
-	do 
+	do
 		if [ "${#var}" -eq 8 ] && [[ $var =~ $re ]]  ; then
 			# This could be bug number
 			bugNbrSpecified="Y"
 			bugNbr="$var"
 			echo -e "Found bug number: \e[1m$var\e[0m"
-			continue							
-		elif [ -f "$var" ] ; then  
+			continue
+		elif [ -f "$var" ] ; then
 			echo "Found file $var in curent directory, adding to list for upload"
 			fileList="$fileList put $var;"
 		else
 			echo "File $var not found, skipping"
-		fi		
+		fi
 	done
 fi
 
@@ -82,16 +82,16 @@ fi
 if [ "$fileList" = "" ] ; then
 	echo "Checking for default files to upload"
 	if [ -f ./build-report.html ]; then #upload default files
-			fileList="$fileList put build-report.html;" 
+			fileList="$fileList put build-report.html;"
 	fi
 	if [ -f ./build-report.log ]; then
-			fileList="$fileList put build-report.log;" 
+			fileList="$fileList put build-report.log;"
 	fi
 	if [ -f ./test-report.html ]; then
-			fileList="$fileList put test-report.html;" 
+			fileList="$fileList put test-report.html;"
 	fi
 	if [ -f ./test-report.log ]; then
-			fileList="$fileList put test-report.log;" 
+			fileList="$fileList put test-report.log;"
 	fi
 
 	if ! [ "$fileList" = "" ] ; then
@@ -109,13 +109,13 @@ else
 		if [ "$cont" = "N" ] || [ "$cont" = "n" ] ; then
 			exit
 		fi
-	fi	
+	fi
 fi
 
 emailid="manish.chacko@oracle.com"
 password="***REMOVED***"
 #read -sp 'BugDB password: ' password
 
-#echo "Command: lftp sftp://$emailid:$password@bugsftp.us.oracle.com -e cd $bugNbr;$fileList bye "; 
+#echo "Command: lftp sftp://$emailid:$password@bugsftp.us.oracle.com -e cd $bugNbr;$fileList bye ";
 
 lftp sftp://$emailid:$password@bugsftp.us.oracle.com -e "cd $bugNbr;$fileList bye"

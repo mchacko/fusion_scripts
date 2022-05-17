@@ -11,7 +11,7 @@ updateBugDb()
 	set +x
 
         sqlplus -s  /nolog <<-EOF
-	connect $curUser/$password@"$connectStr" 
+	connect $curUser/$password@"$connectStr"
         SET SERVEROUTPUT ON
         SET SCAN OFF
 	SET FEEDBACK OFF
@@ -71,7 +71,7 @@ text=`cat $template`
 
  echo "$text"
  echo ""
- echo -n 'Continue with this bug closure text? (Y/n): ' 
+ echo -n 'Continue with this bug closure text? (Y/n): '
  read cont
 	if [ "$cont" = "N" ] || [ "$cont" = "n" ] ; then
 		exit
@@ -85,6 +85,3 @@ bugTxt=`cat $template`
 updateBugDb
 
 echo "Done. Exiting.."
-
-
-
